@@ -1,218 +1,57 @@
-<!DOCTYPE html>
-<!--
-MOSALA FIGHTER 0.5 · Änderungen gegenüber 0.4:
-Acht Bewegungsrichtungen mit Eckenprüfung; kontrastreiches Mauerwerk;
-Gegnerverfolgung mit begrenzter Erinnerung; Schrittlaut bei jedem Laufschritt;
-Ein Finger: Tap/Ziel oder Wischen/Kamera, zwei Finger: ausschließlich Pinch-Zoom.
-Eigenständige Offline-Datei, keine externen Laufzeitabhängigkeiten.
--->
-<html lang="de">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="theme-color" content="#10171b">
-<title>MOSALA FIGHTER 0.5 — Die Lipidokriminellen</title>
-<style>
-:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#e7e8dc;background:#0c1316;font-synthesis:none;--line:#49584e;--glow:#eac887;--muted:#9aaca4}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overscroll-behavior:none}button{font:inherit;cursor:pointer;color:inherit}button:focus-visible{outline:2px solid #eedc9a;outline-offset:2px}
-#app{display:flex;flex-direction:column;gap:7px;max-width:1340px;margin:auto;height:100vh;height:100dvh;padding:9px 12px max(9px,env(safe-area-inset-bottom));background:radial-gradient(ellipse at 48% -16%,#24372e,#10171b 50%,#0c1116)}
-#app:fullscreen,#app.pseudo{max-width:none;width:100%;height:100vh;height:100dvh}
-header{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:49px}.brand{display:flex;gap:10px;align-items:center;min-width:0}.crest{width:45px;height:45px;border:2px solid #76865e;border-radius:12px;background:#24332d;flex:none}.crest svg{width:100%;height:100%}.brand b{display:block;font-weight:900;line-height:1;font-size:clamp(17px,2.6vw,27px);letter-spacing:1px;color:#e7cd91;white-space:nowrap}.brand small{display:block;font-size:10px;letter-spacing:1.5px;color:#9cac94;white-space:nowrap;margin-top:4px}.headtools{display:flex;gap:5px;align-items:center;flex-wrap:nowrap}.btn{border:1px solid #607464;border-radius:9px;background:linear-gradient(#273a35,#1a2828);min-width:39px;min-height:38px;padding:5px 10px;font-weight:800;font-size:14px}.btn:hover{border-color:#dfc188}.btn.gold{color:#f5d694;border-color:#9f8856;background:#3b382c}.btn.active{background:#48573b;color:#ffedbb;border-color:#d8c37e}
-.hud{display:grid;grid-template-columns:1.18fr 1.18fr 1.6fr .8fr;gap:7px;flex-shrink:0}.hudbox{min-width:0;background:linear-gradient(#1d2929,#151f24);border:1px solid #3d504e;border-radius:10px;padding:9px 10px}.hudline{display:flex;justify-content:space-between;gap:5px;align-items:center;color:#bec9bc;font-weight:700;font-size:11px;letter-spacing:.5px}.hudline strong{font-size:14px;color:#edf2dd;white-space:nowrap}.track{overflow:hidden;height:10px;background:#10171a;border-radius:9px;margin-top:7px;border:1px solid #425252}.track>i{display:block;height:100%;border-radius:9px;transition:width .16s}.hp{background:linear-gradient(90deg,#ae4145,#f17b65)}.en{background:linear-gradient(90deg,#ae9c50,#eed582)}.micro{display:grid;grid-template-columns:50px minmax(0,1fr) 27px;align-items:center;gap:4px;font-size:10px;line-height:1.4}.micro>span:first-child{color:#c2c9b6}.micro .mini{height:6px;background:#0c161a;border-radius:6px;overflow:hidden}.micro i{display:block;height:100%;background:#83af6f}.micro:nth-child(2) i{background:#d9b65f}.micro:nth-child(3) i{background:#78b9b8}.micro strong{text-align:right;color:#d7dfc9}.combat{display:grid;grid-template-columns:1fr auto;gap:3px 4px;align-content:center;font-size:11px}.combat strong{color:#e9cb85;font-size:16px;text-align:right}
-.stage{position:relative;flex:1;min-height:120px;overflow:hidden;border:2px solid #716c4c;border-radius:13px;background:#090f13;box-shadow:inset 0 0 25px #000a}#board{width:100%;height:100%;display:block;touch-action:none;user-select:none;cursor:crosshair;outline:none}.stage-label{pointer-events:none;position:absolute;left:12px;top:10px;border-radius:6px;background:#0a1318bb;color:#ecd399;padding:6px 9px;font-size:10px;font-weight:800;letter-spacing:1.3px}.viewtools{position:absolute;top:8px;right:9px;display:flex;gap:5px;flex-wrap:wrap;max-width:80%;justify-content:flex-end}.viewtools button{background:#101e22e8;border:1px solid #81907b;border-radius:8px;min-width:34px;height:34px;padding:3px 8px;font-size:17px}.viewtools button.active{background:#59704a;color:#fff0b4}.hint{position:absolute;left:12px;bottom:10px;color:#e4e6d5;background:#101b20dd;border:1px solid #33463f;border-radius:8px;padding:5px 8px;font-size:11px;pointer-events:none;max-width:75%}.toast{position:absolute;left:50%;top:18%;transform:translate(-50%,-10px);background:#1e302adf;color:#f7e6ae;border:1px solid #ad945c;border-radius:10px;padding:10px 14px;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;text-align:center;font-weight:800;font-size:13px;max-width:85%;z-index:2}.toast.show{opacity:1;transform:translate(-50%,0)}
-.dock{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;flex-shrink:0}.dock button{min-width:0;border:1px solid #536553;border-radius:11px;background:#1d302c;padding:7px 3px;min-height:60px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;color:#dfe6d0;font-size:11px}.dock button .ico{font-size:23px}.dock button.active,.dock button:hover{border-color:#d7bc7e;background:#3a4637;color:#ffe6ae}.footer{display:flex;justify-content:space-between;gap:10px;color:#7f988e;font-size:10px;flex-shrink:0}
-.shade{position:absolute;z-index:8;inset:0;background:#02090bd9;display:none;align-items:center;justify-content:center;padding:12px}.shade.show{display:flex}.modal{width:min(640px,100%);max-height:94%;display:flex;flex-direction:column;background:#1c292b;border:1px solid #b59c63;border-radius:15px;box-shadow:0 12px 50px #000d;overflow:hidden}.modalhead{display:flex;justify-content:space-between;align-items:center;padding:14px;border-bottom:1px solid #526354}.modal h2{margin:0;color:#f0d794;font-size:18px}.modal small{color:#abb6a9}.modalmain{padding:12px 15px 18px;overflow:auto;font-size:14px}.modalmain p{line-height:1.55}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.food,.monster{display:flex;align-items:center;gap:9px;text-align:left;background:#283735;border:1px solid #4b6459;border-radius:10px;padding:9px}.food:disabled{opacity:.38;cursor:not-allowed}.food .emoji{font-size:31px}.food b,.monster b{display:block;color:#f3da9d}.food small,.monster small{display:block;font-size:11px;line-height:1.45}.monster svg{width:60px;height:60px;flex:none}.report{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.report>div{border:1px solid #4a6256;background:#283534;padding:10px;border-radius:9px}.report strong{display:block;color:#f1d894;font-size:25px;margin:4px 0}.report small{font-size:11px}.timeline{display:flex;flex-direction:column;gap:5px}.timeline .line{padding:7px 9px;background:#293738;border-radius:5px}.keyhelp b{color:#f2d49c}.keyhelp p{margin:3px 0 13px}.settingsrow{display:flex;gap:10px;align-items:center;justify-content:space-between;border-top:1px solid #526051;padding:10px 0}.settingsrow input{accent-color:#c8b37b}.outcome{text-align:center;padding:20px}.outcome h3{color:#f1d595}.modalclose{border:1px solid #677a6d;border-radius:7px;background:#2b403d;padding:5px 10px}
-@media(max-width:780px){#app{padding:5px 5px max(5px,env(safe-area-inset-bottom));gap:5px}.hud{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.hudbox{padding:6px 8px}.hud{grid-template-columns:repeat(4,minmax(0,1fr))}.hudbox:nth-child(1),.hudbox:nth-child(2){grid-column:span 2}.hudbox.minerals{display:block;grid-column:span 3}.hudbox.combat{grid-column:span 1;font-size:10px}.micro{grid-template-columns:45px 1fr 22px}.brand b{font-size:17px}.brand small{font-size:9px}.crest{width:38px;height:38px}.headtools .btn{min-width:33px;min-height:34px;padding:4px 7px}.dock{gap:4px}.dock button{min-height:54px;font-size:9px;padding:4px 1px}.dock button .ico{font-size:19px}.footer{display:none}.stage-label{font-size:8px;letter-spacing:.5px;max-width:53%}.hint{font-size:9px;max-width:62%}}
-@media(max-width:390px){.brand b{font-size:15px;letter-spacing:0}.brand small{font-size:8px}.headtools #restart{font-size:0}.headtools #restart::after{content:'↻';font-size:18px}.grid{grid-template-columns:1fr}.viewtools{top:37px}.stage-label{top:8px}}
-</style>
-</head>
-<body>
-<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
-<linearGradient id="robe" x2=".9" y2="1"><stop stop-color="#bed37b"/><stop offset=".55" stop-color="#729451"/><stop offset="1" stop-color="#3e5b3e"/></linearGradient>
-<linearGradient id="sausage" x2="1" y2="1"><stop stop-color="#ffb36d"/><stop offset=".5" stop-color="#bf4e36"/><stop offset="1" stop-color="#742a2f"/></linearGradient>
-<linearGradient id="lard" x2="1" y2="1"><stop stop-color="#fff5c5"/><stop offset=".52" stop-color="#dbac5e"/><stop offset="1" stop-color="#a36b37"/></linearGradient>
-<linearGradient id="candy" x2="1" y2="1"><stop stop-color="#fff5f6"/><stop offset=".45" stop-color="#f8a6c6"/><stop offset="1" stop-color="#b64e80"/></linearGradient>
-<linearGradient id="fry" x2="0" y2="1"><stop stop-color="#fff1a0"/><stop offset="1" stop-color="#d28c36"/></linearGradient>
-<linearGradient id="meat" x2="1" y2="1"><stop stop-color="#f6bda2"/><stop offset=".6" stop-color="#bf7163"/><stop offset="1" stop-color="#80443c"/></linearGradient>
-<filter id="shadow" x="-35%" y="-35%" width="170%" height="180%"><feDropShadow dx="0" dy="3" stdDeviation="1.8" flood-color="#060808" flood-opacity=".75"/></filter>
-<symbol id="hero" viewBox="0 0 64 64"><g stroke="#303c2d" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" filter="url(#shadow)">
-<path d="M22 45 17 56 27 58 31 47 M36 47 43 57 51 55 45 43" fill="#685034"/>
-<path d="M21 34 Q32 29 44 34 L48 49 Q36 55 20 48Z" fill="url(#robe)"/>
-<path d="M21 39 11 44 14 51 25 44 M43 39 54 42 51 50 40 45" fill="#e8bf87"/>
-<path d="M21 46 44 42 M27 34 43 49" stroke="#dfbd75" stroke-width="4"/>
-<path d="M21 22 Q18 7 34 8 Q49 9 47 24 L45 34 Q34 43 22 34Z" fill="#ecc18d"/>
-<path d="M18 20 Q24 7 34 8 Q46 8 49 20 L43 22 Q30 18 19 24Z" fill="#2f452f"/>
-<path d="M18 22 47 19" stroke="#b2d56f" stroke-width="4"/>
-<path d="M26 12 Q27 3 34 3 Q36 10 31 13 M34 12 Q43 4 47 8 Q43 15 34 14" fill="#76ad52"/>
-<path d="M25 26 31 27 M38 27 44 25" stroke="#392f27" stroke-width="2.2"/>
-<circle cx="29" cy="29" r="1.5" fill="#142023" stroke="none"/><circle cx="40" cy="28" r="1.5" fill="#142023" stroke="none"/>
-<path d="M32 35 Q36 37 40 34" fill="none" stroke="#704736"/></g></symbol>
-<symbol id="wurst" viewBox="0 0 64 64"><g stroke="#552720" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" filter="url(#shadow)">
-<path d="M17 44 11 53 17 56 25 46 M41 46 49 55 56 51 47 43" fill="#8e402f"/><path d="M18 33 10 38 7 44 M46 35 53 40 57 35" fill="none" stroke-width="4"/>
-<path d="M30 10 Q11 9 13 31 Q13 53 32 52 Q51 52 50 30 Q48 11 30 10Z" fill="url(#sausage)"/>
-<path d="M27 10 Q23 3 17 8 L17 16 M42 12 47 6" fill="none" stroke="#f8bc83" stroke-width="3"/>
-<path d="M21 29 30 32 M44 29 36 32" stroke="#391d23" stroke-width="4"/>
-<ellipse cx="27" cy="35" rx="3.3" ry="4.3" fill="#fff2d9"/><ellipse cx="39" cy="35" rx="3.3" ry="4.3" fill="#fff2d9"/>
-<circle cx="28" cy="36" r="1.7" fill="#201417" stroke="none"/><circle cx="38" cy="36" r="1.7" fill="#201417" stroke="none"/>
-<path d="M26 44 Q34 39 41 44 L38 49 29 49Z" fill="#4c1e1f"/><path d="M29 44 32 48 35 44 38 48" stroke="#fff1d1" fill="none" stroke-width="1.6"/>
-<path d="M56 20 V44 M52 20 V34 Q55 37 59 34 V20" stroke="#c7d1d2" stroke-width="2.5" fill="none"/></g></symbol>
-<symbol id="fett" viewBox="0 0 64 64"><g stroke="#7d522d" stroke-width="2.7" stroke-linejoin="round" filter="url(#shadow)">
-<path d="M20 17 Q18 7 31 8 Q39 4 45 16 Q55 14 54 31 Q62 42 50 50 L53 56 43 54 Q28 60 18 52 L11 56 12 44 Q5 32 15 26 Q11 19 20 17Z" fill="url(#lard)"/>
-<path d="M16 24 Q13 28 13 34 M24 16 Q27 12 33 13" stroke="#ffeabb" stroke-width="3.5" fill="none"/>
-<path d="M22 32 31 36 M45 32 37 36" stroke="#71502f" stroke-width="4"/>
-<ellipse cx="29" cy="39" rx="3" ry="3.6" fill="#fdf6df"/><ellipse cx="40" cy="39" rx="3" ry="3.6" fill="#fdf6df"/>
-<circle cx="30" cy="39" r="1.3" fill="#38271b" stroke="none"/><circle cx="39" cy="39" r="1.3" fill="#38271b" stroke="none"/>
-<path d="M27 48 Q35 43 43 48" stroke="#7d4f34" stroke-width="3" fill="none"/></g></symbol>
-<symbol id="zucker" viewBox="0 0 64 64"><g stroke="#7a3958" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" filter="url(#shadow)">
-<path d="M21 48 18 57 M43 48 48 57 M15 37 9 45 M49 38 56 45" stroke-width="4" fill="none"/>
-<path d="M17 29 Q8 15 23 13 Q31 2 41 13 Q57 14 50 30 Q61 46 44 51 L22 51 Q5 47 17 29Z" fill="url(#candy)"/>
-<path d="M22 15 Q27 7 38 11 Q46 10 47 19" stroke="#fff4eb" stroke-width="4" fill="none"/>
-<path d="M23 28 31 32 M45 29 37 32" stroke="#71314d" stroke-width="4"/>
-<ellipse cx="29" cy="36" rx="3.8" ry="4" fill="#fffaf0"/><ellipse cx="41" cy="36" rx="3.8" ry="4" fill="#fffaf0"/>
-<circle cx="30" cy="37" r="1.4" fill="#301e25" stroke="none"/><circle cx="40" cy="37" r="1.4" fill="#301e25" stroke="none"/>
-<path d="M27 43 Q35 52 44 43" fill="#632f40"/><path d="M29 46 32 49 35 46 38 49" stroke="#fff5e8" fill="none" stroke-width="1.4"/>
-<path d="M34 10 34 4 Q42 1 43 8" fill="none" stroke="#5e783b"/><circle cx="34" cy="8" r="4.5" fill="#e1545e" stroke="#793540"/></g></symbol>
-<symbol id="pommes" viewBox="0 0 64 64"><g stroke="#74372a" stroke-width="2.5" stroke-linejoin="round" filter="url(#shadow)">
-<path d="M16 26 14 6 23 5 26 26 M30 25 29 4 38 5 38 27 M42 26 43 8 52 11 48 32" fill="url(#fry)"/>
-<path d="M15 27 9 38 15 46 M49 28 55 40 49 45 M24 49 20 58 M41 49 45 58" fill="none" stroke="#b97648" stroke-width="4"/>
-<path d="M12 25 Q32 29 53 25 L49 51 Q32 57 16 51Z" fill="#ba4034"/><path d="M16 29 Q32 33 50 29" stroke="#f1935c" stroke-width="2" fill="none"/>
-<path d="M19 37 29 40 M45 37 36 40" stroke="#3c1d20" stroke-width="4"/><ellipse cx="28" cy="43" rx="3" ry="3" fill="#fff4df"/><ellipse cx="40" cy="43" rx="3" ry="3" fill="#fff4df"/>
-<path d="M27 49 Q34 46 42 49" stroke="#5a2527" stroke-width="3" fill="none"/></g></symbol>
-<symbol id="fleisch" viewBox="0 0 64 64"><g stroke="#63352d" stroke-width="2.5" stroke-linejoin="round" filter="url(#shadow)">
-<path d="M12 47 7 54 17 55 22 47 M44 48 51 56 58 53 52 46" fill="#8b4f3b"/>
-<path d="M10 21 27 12 53 18 56 44 43 55 16 51Z" fill="url(#meat)"/>
-<path d="M10 21 27 10 53 17 56 27 32 20Z" fill="#8a3b2e"/>
-<path d="M18 24 17 47 M51 29 49 44" stroke="#f5c1aa" stroke-width="2"/>
-<path d="M19 35 29 39 M49 34 38 39" stroke="#412329" stroke-width="5"/>
-<ellipse cx="27" cy="41" rx="3.5" ry="3" fill="#fff2cf"/><ellipse cx="42" cy="41" rx="3.5" ry="3" fill="#fff2cf"/>
-<path d="M28 48 Q35 45 43 48 L40 52 31 52Z" fill="#552529"/></g></symbol>
-<symbol id="stairs" viewBox="0 0 64 64"><g stroke="#292017" stroke-width="2"><path d="M9 16 H55 V50 H9Z" fill="#221f1c"/><path d="M9 17 H55 L49 26 H15Z" fill="#c29b64"/><path d="M15 27 H49 L44 35 H20Z" fill="#aa8050"/><path d="M20 36 H44 L39 44 H25Z" fill="#816445"/><path d="M25 45 H39 L35 51 H29Z" fill="#504139"/><path d="M9 16 H55 M15 27 H49" stroke="#e4c187" opacity=".6"/></g></symbol>
-<symbol id="food-linsen" viewBox="0 0 64 64"><g stroke="#61432a" stroke-width="2.3"><ellipse cx="32" cy="40" rx="25" ry="11" fill="#e4ba87"/><path d="M8 35 Q12 56 32 55 Q52 56 56 35Z" fill="#8c5c45"/><ellipse cx="32" cy="34" rx="24" ry="11" fill="#e5a54d"/><path d="M16 35 21 33 26 36 29 30 32 34 38 29 41 36 47 33" fill="none" stroke="#79462a" stroke-width="3"/><path d="M28 27 31 23 34 26 M40 29 44 24" fill="none" stroke="#80ab62" stroke-width="3"/></g></symbol>
-<symbol id="food-zitrone" viewBox="0 0 64 64"><g stroke="#85722c" stroke-width="2.5"><path d="M13 39 Q14 21 35 16 Q50 17 51 31 Q51 45 29 49 Q20 47 13 39Z" fill="#e9d86a"/><path d="M16 35 Q23 20 40 21" fill="none" stroke="#fff5aa" stroke-width="4"/><path d="M32 17 Q36 7 47 11 Q44 20 35 21" fill="#70a451"/></g></symbol>
-<symbol id="food-kefir" viewBox="0 0 64 64"><g stroke="#527682" stroke-width="2.4"><path d="M21 13 H43 L46 49 Q33 56 18 49Z" fill="#d1e2d3"/><path d="M23 8 H41 V15 H23Z" fill="#7aa6ac"/><path d="M19 28 H45 V43 H19Z" fill="#80b5a3"/><path d="M25 34 32 39 40 33" fill="none" stroke="#e6f8e9" stroke-width="3"/></g></symbol>
-<symbol id="food-nuss" viewBox="0 0 64 64"><g stroke="#6c4a2c" stroke-width="2.5"><path d="M30 15 Q13 10 14 29 Q6 39 21 49 Q31 57 40 48 Q58 47 50 30 Q52 11 36 15Z" fill="#b88b4f"/><path d="M31 16 Q22 23 26 30 Q18 36 29 49 M38 16 Q45 25 37 31 Q44 40 34 51" fill="none" stroke="#79532f" stroke-width="3"/></g></symbol>
-</defs></svg>
-<div id="app">
-<header><div class="brand"><div class="crest"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#hero"/></svg></div><div><b>MOSALA FIGHTER <small style="display:inline;color:#d2af66">0.5</small></b><small>DER KELLER DER LIPIDOKRIMINELLEN</small></div></div><div class="headtools"><button id="restart" class="btn" title="Neues Spiel">↻ Neu</button><button id="soundBtn" class="btn" title="Ton ein- oder ausschalten" aria-label="Ton ein- oder ausschalten" aria-pressed="true">🔊</button><button id="fullBtn" class="btn gold" title="Vollbild">⛶</button></div></header>
-<div class="hud"><div class="hudbox"><div class="hudline"><span>❤️ LEBENSPUNKTE</span><strong id="hpText">100 / 100</strong></div><div class="track"><i class="hp" id="hpBar" style="width:100%"></i></div></div><div class="hudbox"><div class="hudline"><span>⚡ ENERGIE</span><strong id="energyText">100 / 100</strong></div><div class="track"><i class="en" id="energyBar" style="width:100%"></i></div></div><div class="hudbox minerals"><div class="micro"><span>Makros</span><div class="mini"><i id="macroBar"></i></div><strong id="macroVal">80</strong></div><div class="micro"><span>Vitamine</span><div class="mini"><i id="vitBar"></i></div><strong id="vitVal">80</strong></div><div class="micro"><span>Mineral</span><div class="mini"><i id="minBar"></i></div><strong id="minVal">80</strong></div></div><div class="hudbox combat"><span>⚔ Angriff</span><strong id="atkText">12</strong><span>🛡 Abwehr</span><strong id="defText">6</strong></div></div>
-<main class="stage" id="arena"><svg id="board" role="img" tabindex="0" aria-label="Dungeonkarte. Ziel antippen; mit einem Finger oder der Maus verschieben; mit zwei Fingern nur zoomen"></svg><div class="stage-label">EBENE 01 · MOSALA-DUNGEON</div><div class="viewtools"><button id="zoomIn" title="Heranzoomen">＋</button><button id="zoomOut" title="Herauszoomen">－</button><button id="centerBtn" title="Kamera dem Waldshaolin folgen" aria-label="Auf Spieler zentrieren" class="active">⌖</button><button id="edgeBtn" title="Maus am Kartenrand bewegt die Kamera (optional)" aria-pressed="false">⇥</button></div><div class="hint" id="hint">👆 Tippen: Ziel · Wischen: Karte · ✌ Pinch: Zoom</div><div id="toast" class="toast" aria-live="polite"></div>
-<div id="shade" class="shade"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modalhead"><div><h2 id="modalTitle">MOSALA</h2><small id="modalIntro"></small></div><button id="closeModal" class="modalclose" aria-label="Schließen">✕</button></div><div id="modalBody" class="modalmain"></div></section></div></main>
-<nav class="dock" aria-label="Spielmenü"><button data-panel="inventory"><span class="ico">🎒</span>Inventar</button><button data-panel="nutrition"><span class="ico">🌿</span>Nährstoffe</button><button data-panel="character"><span class="ico">⚔️</span>Charakter</button><button data-panel="bestiary"><span class="ico">👹</span>Bestiarium</button><button data-panel="log"><span class="ico">📜</span>Chronik</button><button data-panel="settings"><span class="ico">⚙️</span>Steuerung</button></nav>
-<div class="footer"><span>Offline · SVG · WebAudio · frei bewegbare Kamera · automatische Wegfindung</span><span id="status">Züge: 0 · Nächste Ebene erreichen</span></div>
-</div>
-<script>
-(()=>{'use strict';
-const NS='http://www.w3.org/2000/svg',T=64,W=36,H=29,$=id=>document.getElementById(id);const board=$('board'),arena=$('arena'),shade=$('shade'),app=$('app');const clamp=(v,min,max)=>Math.min(max,Math.max(min,v)),rand=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),key=(x,y)=>x+','+y,dist=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);const dirs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
-const FOODS={linsen:{name:'Linsensuppe',icon:'🥣',svg:'food-linsen',energy:31,macro:21,vit:6,min:12,desc:'Energie, Protein und Mineralstoffe'},zitrone:{name:'Zitrone',icon:'🍋',svg:'food-zitrone',energy:5,macro:1,vit:24,min:3,desc:'Vor allem Vitaminversorgung'},kefir:{name:'Kefir',icon:'🥛',svg:'food-kefir',energy:20,macro:9,vit:7,min:15,desc:'Energie, Protein, Mineralstoffe'},nuss:{name:'Walnüsse',icon:'🌰',svg:'food-nuss',energy:25,macro:12,vit:8,min:11,desc:'Energie und gute Fettsäuren'}};
-const TYPES={wurst:{name:'Wurstling',svg:'wurst',hp:20,attack:7,def:1,notice:6,desc:'Bewaffneter Angreifer aus verarbeitetem Fleisch.'},fett:{name:'Fettkleks',svg:'fett',hp:14,attack:5,def:1,notice:4,desc:'Zäh und schmierig, aber nicht besonders schnell.'},zucker:{name:'Zuckerbombe',svg:'zucker',hp:11,attack:8,def:0,notice:6,desc:'Überraschend schnell und ziemlich unberechenbar.'},pommes:{name:'Pommes-Monster',svg:'pommes',hp:23,attack:6,def:2,notice:6,desc:'Knusprige Verteidigung, träger Angriff.'},fleisch:{name:'Fleischkäse des verrottenen Todes',svg:'fleisch',hp:33,attack:9,def:3,notice:6,desc:'Schwerfällige Haxen-Singularität in Blockform.'}};
-const CHASE={wurst:{chance:.92,memory:8},fett:{chance:.58,memory:5},zucker:{chance:1,memory:6},pommes:{chance:.76,memory:7},fleisch:{chance:.62,memory:6}};
-let map=[],rooms=[],seen=new Set(),hero,monsters=[],items=[],exit,turn=0,kills=0,over=false,path=[],target=null,autoTimer=null,log=[],toastTimer=null,slash=null,activePanel=null;
-let soundOn=true,volume=.32,audio=null;const AC=window.AudioContext||window.webkitAudioContext;
-function unlockAudio(){if(!soundOn||!AC)return;try{if(!audio)audio=new AC();if(audio.state==='suspended')audio.resume().catch(()=>{});}catch{soundOn=false;syncButtons();}}
-function note(freq,start,duration,type='sine',loud=.16,endFreq=null){if(!audio||audio.state!=='running'||!soundOn)return;const t=audio.currentTime+start,o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(freq,t);if(endFreq)o.frequency.exponentialRampToValueAtTime(Math.max(40,endFreq),t+duration);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,loud*volume),t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+duration);o.connect(g);g.connect(audio.destination);o.start(t);o.stop(t+duration+.025);}
-function sound(what){if(!soundOn)return;unlockAudio();switch(what){case'step':note(125,0,.045,'triangle',.05);break;case'hit':note(175,0,.09,'sawtooth',.22,85);note(310,.02,.08,'triangle',.09,120);break;case'hurt':note(195,0,.18,'sawtooth',.17,75);break;case'kill':note(250,0,.09,'triangle',.13,360);note(410,.08,.14,'triangle',.14,250);break;case'pickup':note(460,0,.09,'sine',.16);note(670,.10,.12,'sine',.14);break;case'eat':note(260,0,.08,'sine',.13);note(355,.09,.08,'sine',.15);note(470,.18,.12,'sine',.12);break;case'win':[392,494,587,784].forEach((n,i)=>note(n,i*.12,.24,'triangle',.16));break;case'fail':[220,174,130].forEach((n,i)=>note(n,i*.16,.22,'sawtooth',.10));break;case'ui':note(430,0,.045,'sine',.09);break;}}
-function svg(tag,attrs={},parent){const el=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,String(v));if(parent)parent.appendChild(el);return el;}
-function walk(x,y){return y>=0&&y<H&&x>=0&&x<W&&map[y][x]===1;}
-// Bewegung, Nahkampf und beide Pfadfinder teilen dieselbe Eckenregel.
-function canStep(from,x,y,knownOnly=false){const dx=x-from.x,dy=y-from.y;if(!Number.isInteger(dx)||!Number.isInteger(dy)||Math.max(Math.abs(dx),Math.abs(dy))!==1||!walk(x,y))return false;if(knownOnly&&!seen.has(key(x,y)))return false;if(dx&&dy){if(!walk(from.x+dx,from.y)||!walk(from.x,from.y+dy))return false;if(knownOnly&&(!seen.has(key(from.x+dx,from.y))||!seen.has(key(from.x,from.y+dy))))return false;}return true;}
-function canMelee(a,b){return canStep(a,b.x,b.y);}
-function dig(x,y){if(x>0&&x<W-1&&y>0&&y<H-1)map[y][x]=1;}
-function corridor(a,b){let x=a.x,y=a.y;const aToB=()=>{while(x!==b.x){x+=Math.sign(b.x-x);dig(x,y);}},upToB=()=>{while(y!==b.y){y+=Math.sign(b.y-y);dig(x,y);}};if(Math.random()<.5){aToB();upToB();}else{upToB();aToB();}}
-function build(){for(let attempt=0;attempt<30;attempt++){map=Array.from({length:H},()=>Array(W).fill(0));rooms=[];for(let z=0;z<70&&rooms.length<11;z++){const w=rand(4,8),h=rand(4,7),x=rand(2,W-w-3),y=rand(2,H-h-3);if(rooms.some(r=>x<r.x+r.w+1&&x+w+1>r.x&&y<r.y+r.h+1&&y+h+1>r.y))continue;const r={x,y,w,h,cx:x+Math.floor(w/2),cy:y+Math.floor(h/2)};for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)dig(xx,yy);if(rooms.length){const old=rooms[rooms.length-1];corridor({x:old.cx,y:old.cy},{x:r.cx,y:r.cy});}rooms.push(r);}if(rooms.length>=6)break;}if(rooms.length<2){rooms=[{cx:4,cy:4},{cx:W-5,cy:H-5}];corridor({x:4,y:4},{x:W-5,y:H-5});}}
-function occupied(x,y){return (hero&&hero.x===x&&hero.y===y)||(exit&&exit.x===x&&exit.y===y)||monsters.some(m=>m.x===x&&m.y===y)||items.some(i=>i.x===x&&i.y===y);}
-function floorSpot(){for(let attempts=0;attempts<300;attempts++){const r=rooms[rand(0,rooms.length-1)],x=rand(r.x??r.cx-1,(r.x??r.cx-1)+(r.w??3)-1),y=rand(r.y??r.cy-1,(r.y??r.cy-1)+(r.h??3)-1);if(walk(x,y)&&!occupied(x,y)&&dist({x,y},hero)>4)return {x,y};}for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++)if(walk(x,y)&&!occupied(x,y))return {x,y};return {x:hero.x,y:hero.y};}
-function los(a,b){let x=a.x,y=a.y,dx=Math.abs(b.x-x),dy=Math.abs(b.y-y),sx=x<b.x?1:-1,sy=y<b.y?1:-1,err=dx-dy;while(true){if(x===b.x&&y===b.y)return true;if(!walk(x,y)&&!(x===a.x&&y===a.y))return false;const d=2*err,nx=x+(d>-dy?sx:0),ny=y+(d<dx?sy:0);if(nx!==x&&ny!==y&&(!walk(nx,y)||!walk(x,ny)))return false;if(d>-dy)err-=dy;if(d<dx)err+=dx;x=nx;y=ny;}}
-function visible(x,y){return Math.hypot(x-hero.x,y-hero.y)<=7.6&&los(hero,{x,y});}
-function updateSight(){for(let y=Math.max(0,hero.y-8);y<=Math.min(H-1,hero.y+8);y++)for(let x=Math.max(0,hero.x-8);x<=Math.min(W-1,hero.x+8);x++)if(visible(x,y))seen.add(key(x,y));}
-function say(s){log.unshift('Zug '+turn+': '+s);log=log.slice(0,75);if(activePanel==='log')fillPanel('log');}
-function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),1900);}
-const cam={x:0,y:0,w:15*T,h:10*T,zoom:15,follow:true};let edgeOn=false,edgePos=null,edgeRAF=null,edgePrev=0;
-function syncButtons(){$('soundBtn').textContent=soundOn?'🔊':'🔇';$('soundBtn').setAttribute('aria-pressed',String(soundOn));$('centerBtn').classList.toggle('active',cam.follow);$('edgeBtn').classList.toggle('active',edgeOn);$('edgeBtn').setAttribute('aria-pressed',String(edgeOn));}
-function reset(){clearGestures();stopAuto();map=[];rooms=[];seen=new Set();hero=null;monsters=[];items=[];turn=0;kills=0;log=[];over=false;activePanel=null;shade.classList.remove('show');cam.follow=true;cam.zoom=15;build();let first=rooms[0];hero={x:first.cx,y:first.cy,hp:100,energy:100,macro:80,vit:81,min:79,inv:{linsen:2,zitrone:1,kefir:1,nuss:1}};const far=[...rooms].sort((a,b)=>dist({x:b.cx,y:b.cy},hero)-dist({x:a.cx,y:a.cy},hero))[0];exit={x:far.cx,y:far.cy};const firstWurst=dirs.map(([dx,dy])=>({x:hero.x+3*dx,y:hero.y+3*dy})).find(p=>walk(p.x,p.y)&&!occupied(p.x,p.y));if(firstWurst)monsters.push({...firstWurst,type:'wurst',hp:TYPES.wurst.hp,maxhp:TYPES.wurst.hp});for(let i=0;i<13;i++){const loc=floorSpot(),type=Object.keys(TYPES)[rand(0,4)];monsters.push({...loc,type,hp:TYPES[type].hp,maxhp:TYPES[type].hp});}for(let i=0;i<17;i++){const loc=floorSpot();items.push({...loc,food:Object.keys(FOODS)[rand(0,3)]});}for(const food of ['linsen','kefir']){const loc=floorSpot();items.push({...loc,food});}updateSight();say('Waldshaolin L betritt den Keller der Lipidokriminellen.');say('Finde die Treppe. Nährstoffe erhalten deine Kampfkraft.');syncButtons();draw();toast('🪜 Erreiche die Treppe zur nächsten Ebene.');}
-function stats(){const ef=hero.energy<15?.68:hero.energy<35?.85:1,n=(hero.macro+hero.vit+hero.min)/300;return {atk:Math.max(2,Math.round((8+hero.macro*.057)*ef*(.65+.35*n))),def:Math.max(0,Math.round((2+hero.min*.053)*(.6+.4*n)))};}
-function enemyAt(x,y){return monsters.find(m=>m.x===x&&m.y===y);}
-function collect(){for(let i=items.length-1;i>=0;i--)if(items[i].x===hero.x&&items[i].y===hero.y){const f=items[i].food;hero.inv[f]++;items.splice(i,1);say('🎒 '+FOODS[f].name+' gefunden.');sound('pickup');}}
-function enemyTurn(){for(const m of [...monsters]){if(over)break;const t=TYPES[m.type],behavior=CHASE[m.type],spotted=Math.hypot(m.x-hero.x,m.y-hero.y)<=t.notice&&los(m,hero);if(spotted){m.lastSeen={x:hero.x,y:hero.y};m.alertUntil=turn+behavior.memory;}if(canMelee(m,hero)){const hit=rand(1,t.attack+1),damage=Math.max(1,hit-Math.floor(stats().def*.48));hero.hp=clamp(hero.hp-damage,0,100);say('💥 '+t.name+' trifft dich (−'+damage+' LP).');sound('hurt');if(hero.hp===0){finish(false);break;}continue;}
-if(!m.lastSeen)continue;if(turn>m.alertUntil||(m.x===m.lastSeen.x&&m.y===m.lastSeen.y)){m.lastSeen=null;continue;}if(Math.random()>=behavior.chance)continue;const moves=routeTo(m,m.lastSeen,{approach:spotted});if(moves?.length&&!(moves[0].x===hero.x&&moves[0].y===hero.y)){m.x=moves[0].x;m.y=moves[0].y;if(!spotted&&m.x===m.lastSeen.x&&m.y===m.lastSeen.y)m.lastSeen=null;}}}
-function tick(extra=0){turn++;hero.energy=clamp(hero.energy-.24-extra,0,100);hero.macro=clamp(hero.macro-.035,0,100);hero.vit=clamp(hero.vit-.014,0,100);hero.min=clamp(hero.min-.018,0,100);if(hero.energy<=0){hero.hp=Math.max(0,hero.hp-1);if(turn%4===0)say('⚠ Energiereserven erschöpft: Lebenspunkte sinken.');}else if(turn%10===0&&hero.hp<100&&hero.energy>40&&hero.macro>35&&hero.vit>30&&hero.min>30)hero.hp++;if(hero.hp<=0){finish(false);return;}enemyTurn();updateSight();if(hero.hp<=0)finish(false);}
-function fight(m){if(over||shade.classList.contains('show')||!monsters.includes(m)||!canMelee(hero,m))return false;const s=stats(),roll=rand(2,5),damage=Math.max(1,s.atk+roll-TYPES[m.type].def);m.hp-=damage;slash={x:m.x,y:m.y};say('⚔ '+TYPES[m.type].name+' erleidet '+damage+' Schaden.');sound('hit');if(m.hp<=0){monsters.splice(monsters.indexOf(m),1);kills++;say('☠ '+TYPES[m.type].name+' besiegt.');sound('kill');}tick(.52);return true;}
-function step(dx,dy){if(over||shade.classList.contains('show'))return false;const x=hero.x+dx,y=hero.y+dy;if(!canStep(hero,x,y))return false;const m=enemyAt(x,y);if(m){fight(m);draw();return true;}hero.x=x;hero.y=y;sound('step');collect();tick(0);if(!over&&hero.x===exit.x&&hero.y===exit.y)finish(true);draw();return true;}
-function waitTurn(){if(over||shade.classList.contains('show'))return;stopAuto();tick(.08);say('⌛ Du wartest eine Runde.');draw();}
-function eat(id){if(over||hero.inv[id]<1)return;const f=FOODS[id];hero.inv[id]--;hero.energy=clamp(hero.energy+f.energy,0,100);hero.macro=clamp(hero.macro+f.macro,0,100);hero.vit=clamp(hero.vit+f.vit,0,100);hero.min=clamp(hero.min+f.min,0,100);say('🥣 '+f.name+' verzehrt. Energie +'+f.energy+'.');sound('eat');closePanel();tick(.1);draw();}
-function finish(win){stopAuto();over=true;draw();sound(win?'win':'fail');say(win?'🪜 Du hast die nächste Ebene erreicht!':'☠ Waldshaolin L wurde besiegt.');openPanel('result',win);}
-// Alle acht Schritte kosten einen Zug: Breitensuche liefert den kürzesten Zugweg.
-function routeTo(source,dest,{knownOnly=false,approach=false}={}){const q=[{x:source.x,y:source.y}],visited=new Set([key(source.x,source.y)]),previous=new Map();let chosen=null;for(let i=0;i<q.length;i++){const cur=q[i];if(approach?canMelee(cur,dest):(cur.x===dest.x&&cur.y===dest.y)){chosen=cur;break;}for(const [dx,dy] of dirs){const nx=cur.x+dx,ny=cur.y+dy,id=key(nx,ny);if(visited.has(id)||!canStep(cur,nx,ny,knownOnly))continue;const blocker=enemyAt(nx,ny);if(blocker&&(!knownOnly||visible(nx,ny)))continue;visited.add(id);previous.set(id,cur);q.push({x:nx,y:ny});}}if(!chosen)return null;const moves=[];for(let v=chosen;v.x!==source.x||v.y!==source.y;v=previous.get(key(v.x,v.y)))moves.unshift(v);return moves;}
-function pathfind(dest,targetEnemy=false){return routeTo(hero,dest,{knownOnly:true,approach:targetEnemy});}
-function stopAuto(){if(autoTimer){clearInterval(autoTimer);autoTimer=null;}path=[];target=null;}
-function choose(x,y){if(over||shade.classList.contains('show')||x<0||y<0||x>=W||y>=H)return;stopAuto();if(!seen.has(key(x,y))||!walk(x,y)){toast('Dieses Feld ist noch nicht erkundet oder blockiert.');draw();return;}const monster=visible(x,y)?enemyAt(x,y):null;if(monster&&canMelee(hero,monster)){cam.follow=true;fight(monster);draw();return;}if(hero.x===x&&hero.y===y){cam.follow=true;syncButtons();draw();return;}const p=pathfind({x,y},Boolean(monster));if(!p){toast('Kein freier bekannter Weg zum Ziel.');draw();return;}cam.follow=true;syncButtons();target={x,y,monster:monster||null,noticed:new Set(monsters.filter(m=>visible(m.x,m.y)))};path=p;draw();autoTimer=setInterval(autoStep,145);}
-function autoDanger(noticed){return monsters.some(m=>canMelee(hero,m)||(visible(m.x,m.y)&&!noticed.has(m)));}
-function stopForDanger(){stopAuto();toast('⚔ Gegner entdeckt oder in Reichweite – Lauf gestoppt.');draw();}
-function autoStep(){if(over||shade.classList.contains('show')||!target){stopAuto();return;}const route=target,goal=route.monster;if(goal&&(!monsters.includes(goal)||!visible(goal.x,goal.y))){stopAuto();draw();return;}if(autoDanger(route.noticed)){stopForDanger();return;}if(goal){route.x=goal.x;route.y=goal.y;}const newPath=pathfind({x:route.x,y:route.y},Boolean(goal));if(!newPath){stopAuto();toast('Route ist blockiert.');draw();return;}path=newPath;if(!path.length){stopAuto();draw();return;}const next=path.shift();if(enemyAt(next.x,next.y)){stopAuto();toast('⚔ Gegner blockiert deinen Weg.');draw();return;}if(!step(next.x-hero.x,next.y-hero.y)){stopAuto();toast('Route ist blockiert.');draw();return;}if(over||target!==route)return;if(autoDanger(route.noticed)){stopForDanger();return;}if(hero.x===route.x&&hero.y===route.y&&!goal){stopAuto();draw();}}
-function wallNear(x,y){for(let y1=y-1;y1<=y+1;y1++)for(let x1=x-1;x1<=x+1;x1++)if(walk(x1,y1))return true;return false;}
-function viewport(){const r=board.getBoundingClientRect();const aspect=(r.width>0&&r.height>0)?r.width/r.height:1.3;cam.w=cam.zoom*T;cam.h=cam.w/aspect;if(cam.follow){cam.x=(hero.x+.5)*T-cam.w/2;cam.y=(hero.y+.5)*T-cam.h/2;}cam.x=clamp(cam.x,0,Math.max(0,W*T-cam.w));cam.y=clamp(cam.y,0,Math.max(0,H*T-cam.h));board.setAttribute('viewBox',`${cam.x} ${cam.y} ${cam.w} ${cam.h}`);return {x0:cam.x,y0:cam.y,vw:cam.w,vh:cam.h};}
-function sprite(parent,x,y,id){svg('ellipse',{cx:x*T+32,cy:y*T+55,rx:21,ry:7,fill:'#05090b',opacity:.66},parent);svg('use',{href:'#'+id,x:x*T+3,y:y*T+1,width:58,height:58},parent);}
-function draw(){if(!hero)return;const st=stats();$('hpText').textContent=Math.round(hero.hp)+' / 100';$('energyText').textContent=Math.round(hero.energy)+' / 100';$('hpBar').style.width=hero.hp+'%';$('energyBar').style.width=hero.energy+'%';$('atkText').textContent=st.atk;$('defText').textContent=st.def;for(const [field,bar,value] of [['macro','macroBar','macroVal'],['vit','vitBar','vitVal'],['min','minBar','minVal']]){$(bar).style.width=hero[field]+'%';$(value).textContent=Math.round(hero[field]);}$('status').textContent='Züge: '+turn+' · Siege: '+kills+' · Ebene 01';
-const {x0,y0,vw,vh}=viewport(),xa=clamp(Math.floor(x0/T)-1,0,W-1),xb=clamp(Math.ceil((x0+vw)/T)+1,0,W),ya=clamp(Math.floor(y0/T)-1,0,H-1),yb=clamp(Math.ceil((y0+vh)/T)+1,0,H);const frag=document.createDocumentFragment();svg('rect',{x:x0,y:y0,width:vw,height:vh,fill:'#080d11'},frag);
-for(let y=ya;y<yb;y++)for(let x=xa;x<xb;x++){
-const id=key(x,y),v=visible(x,y);if(v)seen.add(id);if(!seen.has(id))continue;
-const ground=walk(x,y);if(!ground&&!wallNear(x,y))continue;
-// Auch im Erkundungsnebel bleiben helle Steinoberseiten vom flachen Boden unterscheidbar.
-const px=x*T,py=y*T,g=svg('g',{opacity:v?1:.42},frag);
-if(ground){
-svg('rect',{x:px,y:py,width:T,height:T,fill:(x+y)%3===0?'#2c393e':'#28363b',stroke:'#223037','stroke-width':1},g);
-const h=(x*157+y*89)%7;
-if(h===2)svg('path',{d:`M${px+7} ${py+45} l13 -6 9 5 m12 -28 l8 6`,fill:'none',stroke:'#5b6d68','stroke-width':1.3,opacity:.22},g);
-if(h===4)svg('path',{d:`M${px+43} ${py+50} l-13 -9 -4 -11`,fill:'none',stroke:'#16242a','stroke-width':1.8,opacity:.48},g);
-// Der Wandschatten bleibt innerhalb des bekannten Bodenfelds und verdeckt keine Figuren.
-if(!walk(x,y-1)&&seen.has(key(x,y-1)))svg('rect',{x:px,y:py,width:T,height:6,fill:'#0c191e',opacity:.62},g);
-}else{
-// Dunkler Sockel, erhabene gemauerte Deckfläche und eine klare Lichtkante.
-svg('rect',{x:px+1,y:py+1,width:T-2,height:T-2,rx:2,fill:'#35483f',stroke:'#0c181b','stroke-width':3},g);
-svg('path',{d:`M${px+3} ${py+47}H${px+61}V${py+60}H${px+3}Z`,fill:'#43584b'},g);
-svg('rect',{x:px+3,y:py+3,width:T-6,height:46,rx:2,fill:(x+y)%2===0?'#7b887b':'#728174'},g);
-const joint=x%2===0?25:39;
-svg('path',{d:`M${px+4} ${py+25}H${px+60}M${px+joint} ${py+4}V${py+24}M${px+(joint===25?43:21)} ${py+26}V${py+48}`,fill:'none',stroke:'#405449','stroke-width':2.8},g);
-svg('path',{d:`M${px+5} ${py+6}H${px+59}M${px+5} ${py+8}V${py+22}`,fill:'none',stroke:'#b9bea3','stroke-width':2.5,opacity:.84},g);
-svg('path',{d:`M${px+3} ${py+50}H${px+61}M${px+61} ${py+6}V${py+60}`,fill:'none',stroke:'#1a2b26','stroke-width':3},g);
-svg('path',{d:`M${px+5} ${py+60}H${px+59}`,stroke:'#0b171b','stroke-width':3},g);
-}
-if(!v)svg('rect',{x:px,y:py,width:T,height:T,fill:'#030d12',opacity:.25},g);
-}
-if(target){for(const t of path)if(seen.has(key(t.x,t.y)))svg('circle',{cx:t.x*T+32,cy:t.y*T+32,r:5,fill:'#9fdaa8',opacity:.6},frag);svg('rect',{x:target.x*T+3,y:target.y*T+3,width:58,height:58,rx:12,fill:'none',stroke:'#eac87c','stroke-width':3,'stroke-dasharray':'8 5'},frag);}
-for(const item of items)if(item.x>=xa&&item.x<xb&&item.y>=ya&&item.y<yb&&visible(item.x,item.y)){svg('ellipse',{cx:item.x*T+32,cy:item.y*T+53,rx:16,ry:5,fill:'#050709',opacity:.75},frag);svg('use',{href:'#'+FOODS[item.food].svg,x:item.x*T+8,y:item.y*T+6,width:48,height:48},frag);}
-if(seen.has(key(exit.x,exit.y))){if(visible(exit.x,exit.y))svg('rect',{x:exit.x*T+5,y:exit.y*T+5,width:54,height:54,rx:9,fill:'#f2bb65',opacity:.16},frag);svg('use',{href:'#stairs',x:exit.x*T,y:exit.y*T,width:64,height:64,opacity:visible(exit.x,exit.y)?1:.38},frag);}
-for(const m of monsters)if(m.x>=xa&&m.x<xb&&m.y>=ya&&m.y<yb&&visible(m.x,m.y)){sprite(frag,m.x,m.y,TYPES[m.type].svg);if(m.hp<m.maxhp){svg('rect',{x:m.x*T+13,y:m.y*T+5,width:38,height:5,rx:2,fill:'#121317'},frag);svg('rect',{x:m.x*T+13,y:m.y*T+5,width:38*m.hp/m.maxhp,height:5,rx:2,fill:'#e88471'},frag);}}
-if(hero.x>=xa&&hero.x<xb&&hero.y>=ya&&hero.y<yb)sprite(frag,hero.x,hero.y,'hero');if(slash){svg('path',{d:`M${slash.x*T+14} ${slash.y*T+17}l36 31m0 -31 -36 31`,stroke:'#f9d889','stroke-width':4,'stroke-linecap':'round',opacity:.85},frag);slash=null;}board.replaceChildren(frag);syncButtons();}
-function openPanel(name,resultWin){clearGestures();stopAuto();if(activePanel===name&&name!=='result'){closePanel();return;}activePanel=name;document.querySelectorAll('[data-panel]').forEach(b=>b.classList.toggle('active',b.dataset.panel===name));fillPanel(name,resultWin);shade.classList.add('show');}
-function closePanel(){clearGestures();if(over&&activePanel==='result')return;activePanel=null;shade.classList.remove('show');document.querySelectorAll('[data-panel]').forEach(b=>b.classList.remove('active'));}
-function fillPanel(name,resultWin){const title={inventory:'🎒 PROVIANT',nutrition:'🌿 MOSALA-VERSORGUNG',character:'⚔️ WALDSHAOLIN L',bestiary:'☠️ BESTIARIUM',log:'📜 CHRONIK',settings:'⚙️ STEUERUNG & SOUND',result:resultWin?'EBENE 1 GESCHAFFT!':'WALDSHAOLIN GEFALLEN'};const intro={inventory:'Essen kostet eine Runde. Es füllt Ressourcen, heilt aber nicht direkt.',nutrition:'Vereinfachtes Stoffwechselmodell für taktische Entscheidungen.',character:'Gesundheit und Ernährung bestimmen die Überlebenschancen.',bestiary:'Fünf Arten lipidokrimineller Kreaturen.',log:'Die jüngsten Ereignisse des Dungeons.',settings:'Kamera, Touch-Gesten, Tastatur und akustische Rückmeldungen.',result:'MOSALA FIGHTER · ERGEBNIS'};$('modalTitle').textContent=title[name]||'MOSALA';$('modalIntro').textContent=intro[name]||'';const box=$('modalBody');box.replaceChildren();if(name==='inventory'){const grid=document.createElement('div');grid.className='grid';for(const [id,f] of Object.entries(FOODS)){const b=document.createElement('button');b.className='food';b.disabled=!hero.inv[id]||over;b.innerHTML=`<span class="emoji">${f.icon}</span><span><b>${f.name} × ${hero.inv[id]}</b><small>⚡ +${f.energy} · ${f.desc}</small></span>`;b.onclick=()=>eat(id);grid.appendChild(b);}box.appendChild(grid);}
-else if(name==='nutrition'){box.innerHTML=`<div class="report"><div><small>Makronährstoffe</small><strong>${Math.round(hero.macro)} / 100</strong><small>Energieversorgung und Angriff</small></div><div><small>Vitamine</small><strong>${Math.round(hero.vit)} / 100</strong><small>Langfristige Versorgung</small></div><div><small>Mineralstoffe</small><strong>${Math.round(hero.min)} / 100</strong><small>Widerstand und Regeneration</small></div><div><small>Gesamtlage</small><strong>${Math.round((hero.macro+hero.vit+hero.min)/3)} / 100</strong><small>Versorgung senkt die Kampfleistung bei Mangel</small></div></div><p>Spielmodell, keine exakte physiologische Simulation.</p>`;}
-else if(name==='character'){const s=stats();box.innerHTML=`<div class="report"><div><small>Lebenspunkte</small><strong>${Math.round(hero.hp)} / 100</strong><small>Bei null endet das Spiel.</small></div><div><small>Energie</small><strong>${Math.round(hero.energy)} / 100</strong><small>Verbrauch durch Zeit und Kampf.</small></div><div><small>Angriff / Abwehr</small><strong>${s.atk} / ${s.def}</strong><small>Ernährung beeinflusst beide Werte.</small></div><div><small>Erfolge</small><strong>${kills} Gegner</strong><small>${turn} Runden · Ebene 1</small></div></div>`;}
-else if(name==='bestiary'){const grid=document.createElement('div');grid.className='grid';for(const t of Object.values(TYPES)){const d=document.createElement('div');d.className='monster';d.innerHTML=`<svg viewBox="0 0 64 64"><use href="#${t.svg}"/></svg><span><b>${t.name}</b><small>${t.desc}<br>❤️ ${t.hp} · ⚔ ${t.attack} · 🛡 ${t.def}</small></span>`;grid.appendChild(d);}box.appendChild(grid);}
-else if(name==='log'){const el=document.createElement('div');el.className='timeline';for(const entry of log){const d=document.createElement('div');d.className='line';d.textContent=entry;el.appendChild(d);}box.appendChild(el);}
-else if(name==='settings'){box.innerHTML=`<div class="keyhelp"><b>📱 Smartphone / Tablet</b><p>Kurz auf ein bekanntes Feld tippen: Der Waldshaolin läuft zum Ziel. <b>Mit einem Finger wischen: Karte verschieben.</b> Mit zwei Fingern den Abstand ändern: nur zoomen. Zwei Finger gemeinsam verschieben bewegt die Karte nicht. Kameragesten kosten keinen Zug.</p><b>🖱 Desktop</b><p>Einfacher Linksklick: Ziel wählen. <b>Linke Maustaste gedrückt halten und ziehen:</b> freie Kartenansicht. Rechtsklick und Ziehen funktioniert ebenfalls. Mit Mausrad zoomen. Optional mit ⇥ Randscrolling einschalten.</p><b>⌖ Kamera</b><p>Nach dem Verschieben bleibt die Kamera an der gewählten Stelle. ⌖ zentriert wieder auf den Waldshaolin und aktiviert die Verfolgung. Beim Wählen eines neuen Ziels folgt sie automatisch erneut.</p><b>⌨ Tasten</b><p>Pfeiltasten/WASD: ein Feld orthogonal bewegen. Ziffernblock 2/4/6/8: orthogonal; 1/3/7/9: diagonal, auch ohne NumLock. Leertaste: eine Runde warten. Escape: Fenster schließen.</p><b>⚡ Überleben</b><p>Bewegung kostet Züge. Energie sinkt mit der Zeit; bei null sinken Lebenspunkte. Nährstoffe beeinflussen Kampf und Regeneration. Finde die Treppe nach unten.</p></div><div class="settingsrow"><label for="vol">🔊 Lautstärke</label><input id="vol" type="range" min="0" max="100" step="5" value="${Math.round(volume*100)}" aria-label="Lautstärke"></div><div class="settingsrow"><span>Soundeffekte</span><button class="btn" id="panelSound">${soundOn?'🔊 Eingeschaltet':'🔇 Stumm'}</button></div><div class="settingsrow"><span>Maus-Randscrollen</span><button class="btn" id="panelEdge">${edgeOn?'Ein':'Aus'}</button></div><p><small>Version 0.5 · Alle Klänge werden lokal im Browser erzeugt; kein Internet nötig.</small></p>`;$('vol').addEventListener('input',e=>{volume=Number(e.target.value)/100;});$('panelSound').onclick=()=>{soundOn=!soundOn;syncButtons();if(soundOn)sound('ui');$('panelSound').textContent=soundOn?'🔊 Eingeschaltet':'🔇 Stumm';};$('panelEdge').onclick=()=>{edgeOn=!edgeOn;syncButtons();$('panelEdge').textContent=edgeOn?'Ein':'Aus';};}
-else if(name==='result'){box.innerHTML=`<div class="outcome"><h3>${resultWin?'JIN LI, WALDSHAOLIN!':'DIE LIPIDOKRIMINELLEN SIEGEN'}</h3><p>${kills} Gegner besiegt · ${turn} Runden überstanden.<br>❤️ ${Math.round(hero.hp)} Lebenspunkte · ⚡ ${Math.round(hero.energy)} Energie</p><button class="btn gold" id="retry">↻ Neues Dungeon-Level</button></div>`;$('retry').onclick=reset;}}
-// Kamera und Gesten sind vom Spielzustand getrennt: reine Kameragesten kosten keinen Zug.
-function tileAt(clientX,clientY){const r=board.getBoundingClientRect();return {x:Math.floor((cam.x+(clientX-r.left)/r.width*cam.w)/T),y:Math.floor((cam.y+(clientY-r.top)/r.height*cam.h)/T)};}
-function panTo(x,y){cam.follow=false;cam.x=clamp(x,0,Math.max(0,W*T-cam.w));cam.y=clamp(y,0,Math.max(0,H*T-cam.h));draw();}
-function setZoom(next,clientX=null,clientY=null,keepFollow=false){next=clamp(next,8,27);const old=cam.zoom;if(Math.abs(next-old)<.001)return;const r=board.getBoundingClientRect();let rx=.5,ry=.5;if(clientX!==null&&r.width>0&&r.height>0){rx=clamp((clientX-r.left)/r.width,0,1);ry=clamp((clientY-r.top)/r.height,0,1);}const wx=cam.x+rx*cam.w,wy=cam.y+ry*cam.h;cam.zoom=next;const nw=cam.zoom*T,nh=nw/(r.width/Math.max(1,r.height));if(!keepFollow)cam.follow=false;cam.x=wx-rx*nw;cam.y=wy-ry*nh;draw();}
-const PAN_THRESHOLD=9,pointers=new Map();let multitouch=null,drag=null,pinchRAF=null;
-function pointerData(e){return {x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,moved:false,tapBlocked:false,kind:e.pointerType,button:e.button};}
-function insideBoard(x,y){const r=board.getBoundingClientRect();return r.width>0&&r.height>0&&x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom;}
-function clearGestures(){const ids=[...pointers.keys()];pointers.clear();multitouch=null;drag=null;edgePos=null;if(pinchRAF!==null){cancelAnimationFrame(pinchRAF);pinchRAF=null;}for(const id of ids)try{if(board.hasPointerCapture(id))board.releasePointerCapture(id);}catch{}}
-function beginMulti(){if(pointers.size<2)return;stopAuto();drag=null;for(const p of pointers.values())p.tapBlocked=true;const ids=[...pointers.keys()].slice(0,2),a=ids.map(id=>pointers.get(id)),r=board.getBoundingClientRect();if(!r.width||!r.height){clearGestures();return;}const rx=clamp(((a[0].x+a[1].x)/2-r.left)/r.width,0,1),ry=clamp(((a[0].y+a[1].y)/2-r.top)/r.height,0,1);multitouch={ids,distance:Math.max(8,Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)),startZoom:cam.zoom,rx,ry,anchorX:cam.x+rx*cam.w,anchorY:cam.y+ry*cam.h};}
-function updatePinch(){pinchRAF=null;if(!multitouch||pointers.size<2)return;const a=multitouch.ids.map(id=>pointers.get(id));if(a.some(p=>!p))return;const distance=Math.max(8,Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)),next=clamp(multitouch.startZoom*multitouch.distance/distance,8,27);if(Math.abs(next-cam.zoom)<.001)return;const r=board.getBoundingClientRect();if(!r.width||!r.height){clearGestures();return;}const nw=next*T,nh=nw/(r.width/r.height);cam.zoom=next;cam.follow=false;cam.x=multitouch.anchorX-multitouch.rx*nw;cam.y=multitouch.anchorY-multitouch.ry*nh;draw();}
-board.addEventListener('pointerdown',e=>{if(shade.classList.contains('show')||!insideBoard(e.clientX,e.clientY))return;if(e.pointerType==='mouse'&&e.button!==0&&e.button!==2)return;e.preventDefault();unlockAudio();edgePos=null;try{board.setPointerCapture(e.pointerId);}catch{}pointers.set(e.pointerId,pointerData(e));if(pointers.size>=2){for(const p of pointers.values())p.tapBlocked=true;if(!multitouch)beginMulti();}else{drag={id:e.pointerId,startX:e.clientX,startY:e.clientY,startCamX:cam.x,startCamY:cam.y,engaged:false};}});
-board.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'&&pointers.size===0){edgePos={x:e.clientX,y:e.clientY};return;}const p=pointers.get(e.pointerId);if(!p)return;if(shade.classList.contains('show')||!insideBoard(e.clientX,e.clientY)){clearGestures();return;}e.preventDefault();p.x=e.clientX;p.y=e.clientY;if(Math.hypot(p.x-p.sx,p.y-p.sy)>PAN_THRESHOLD)p.moved=true;if(multitouch&&pointers.size>=2){if(pinchRAF===null)pinchRAF=requestAnimationFrame(updatePinch);return;}
-if(drag&&drag.id===e.pointerId&&!p.tapBlocked){if(!drag.engaged&&p.moved){drag.engaged=true;stopAuto();}if(drag.engaged){const r=board.getBoundingClientRect();panTo(drag.startCamX-(e.clientX-drag.startX)/r.width*cam.w,drag.startCamY-(e.clientY-drag.startY)/r.height*cam.h);}}});
-function endPointer(e,cancel=false){if(cancel){clearGestures();return;}const p=pointers.get(e.pointerId);if(!p)return;const wasMulti=Boolean(multitouch),wasDrag=Boolean(drag?.engaged&&drag.id===e.pointerId);if(wasMulti){if(pinchRAF!==null){cancelAnimationFrame(pinchRAF);pinchRAF=null;}updatePinch();}pointers.delete(e.pointerId);if(wasMulti){multitouch=null;drag=null;if(pointers.size>=2)beginMulti();return;}if(drag?.id===e.pointerId)drag=null;if(wasDrag||p.moved||p.tapBlocked||p.button===2||e.button===2||Math.hypot(e.clientX-p.sx,e.clientY-p.sy)>PAN_THRESHOLD||!insideBoard(e.clientX,e.clientY)||shade.classList.contains('show'))return;const tile=tileAt(e.clientX,e.clientY);choose(tile.x,tile.y);}
-board.addEventListener('pointerup',e=>endPointer(e));board.addEventListener('pointercancel',e=>endPointer(e,true));board.addEventListener('lostpointercapture',e=>{if(pointers.has(e.pointerId))clearGestures();});board.addEventListener('pointerleave',e=>{edgePos=null;if(pointers.has(e.pointerId))clearGestures();});board.addEventListener('touchcancel',clearGestures,{passive:true});board.addEventListener('contextmenu',e=>e.preventDefault());window.addEventListener('blur',clearGestures);
-arena.addEventListener('wheel',e=>{if(shade.classList.contains('show'))return;e.preventDefault();setZoom(cam.zoom+(e.deltaY>0?1.1:-1.1),e.clientX,e.clientY);},{passive:false});
-function edgeLoop(time){const dt=Math.min(.07,(time-edgePrev)/1000||0);edgePrev=time;if(edgeOn&&edgePos&&!pointers.size&&!shade.classList.contains('show')&&!over){const r=board.getBoundingClientRect(),d=31;let vx=0,vy=0;if(edgePos.x>=r.left&&edgePos.x<=r.right&&edgePos.y>=r.top&&edgePos.y<=r.bottom){if(edgePos.x-r.left<d)vx=-1;if(r.right-edgePos.x<d)vx=1;if(edgePos.y-r.top<d)vy=-1;if(r.bottom-edgePos.y<d)vy=1;}if(vx||vy)panTo(cam.x+vx*dt*T*5,cam.y+vy*dt*T*5);}edgeRAF=requestAnimationFrame(edgeLoop);}edgeRAF=requestAnimationFrame(edgeLoop);window.addEventListener('pagehide',()=>cancelAnimationFrame(edgeRAF));
-$('zoomIn').onclick=()=>{sound('ui');setZoom(cam.zoom-1.8,null,null,true);};$('zoomOut').onclick=()=>{sound('ui');setZoom(cam.zoom+1.8,null,null,true);};$('centerBtn').onclick=()=>{cam.follow=true;draw();sound('ui');};$('edgeBtn').onclick=()=>{edgeOn=!edgeOn;edgePos=null;syncButtons();sound('ui');toast(edgeOn?'⇥ Randscrollen ein':'⇥ Randscrollen aus');};$('soundBtn').onclick=()=>{soundOn=!soundOn;syncButtons();if(soundOn)sound('ui');};
-$('fullBtn').onclick=async()=>{unlockAudio();try{if(document.fullscreenElement)await document.exitFullscreen();else if(app.classList.contains('pseudo'))app.classList.remove('pseudo');else if(app.requestFullscreen)await app.requestFullscreen();else app.classList.add('pseudo');}catch{app.classList.toggle('pseudo');}setTimeout(draw,80);};$('restart').onclick=()=>{unlockAudio();reset();};
-document.querySelectorAll('[data-panel]').forEach(b=>b.onclick=()=>{sound('ui');openPanel(b.dataset.panel);});$('closeModal').onclick=closePanel;shade.addEventListener('click',e=>{if(e.target===shade)closePanel();});
-window.addEventListener('keydown',e=>{const keys={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],a:[-1,0],s:[0,1],d:[1,0],W:[0,-1],A:[-1,0],S:[0,1],D:[1,0]},numpad={Numpad7:[-1,-1],Numpad8:[0,-1],Numpad9:[1,-1],Numpad4:[-1,0],Numpad6:[1,0],Numpad1:[-1,1],Numpad2:[0,1],Numpad3:[1,1]};if(e.target instanceof HTMLInputElement||e.target instanceof HTMLTextAreaElement||e.target.isContentEditable||e.altKey||e.ctrlKey||e.metaKey)return;const move=numpad[e.code]||keys[e.key];if(move||e.key===' '||e.key==='Escape')e.preventDefault();if(e.key==='Escape'){closePanel();return;}if(shade.classList.contains('show'))return;if(move){unlockAudio();stopAuto();cam.follow=true;step(...move);}else if(e.key===' '){unlockAudio();waitTurn();}});
-window.addEventListener('resize',draw);document.addEventListener('fullscreenchange',()=>setTimeout(draw,80));if('ResizeObserver'in window)new ResizeObserver(draw).observe(arena);reset();
-})();
-</script></body></html>
+
+
+MOSALA FIGHTER 0.1.15
+DER KELLER DER LIPIDOKRIMINELLEN
+↻ Neu
+🔊
+⛶
+❤️ LEBENSPUNKTE
+100 / 100
+
+⚡ ENERGIE
+100 / 100
+
+Makros
+
+80
+Vitamine
+
+80
+Mineral
+
+80
+⚔ Angriff
+12
+🛡 Abwehr
+6
+
+
+EBENE 01 · MOSALA-DUNGEON
+＋
+－
+⌖
+⇥
+👆 Tippen: Ziel · Wischen: Karte · ✌ Pinch: Zoom
+
+🎒
+Inventar
+🌿
+Nährstoffe
+⚔️
+Charakter
+👹
+Bestiarium
+📜
+Chronik
+⚙️
+Steuerung
+Offline · SVG · WebAudio · frei bewegbare Kamera · automatische Wegfindung
+Züge: 0 · Nächste Ebene erreichen
+MOSALA FIGHTER
+0.1.15
+Ein Wald-Shaolin mit kahl rasiertem Kopf und grünem Wickelgewand in Kampfhaltung, umringt von Wurstling, Zuckerbombe, Fettkleks, Pommes-Monster und Fleischkäse, zwischen Wald und Dungeon.
+Der Wald vergisst nicht.
+Spiel starten
+Geschichte ansehen
+Was ist neu? · 0.1.15
+NEU
